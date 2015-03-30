@@ -1,0 +1,17 @@
+#!/bin/bash
+SERVER=YYYY
+CTID=XXXXX
+
+
+. /etc/vz/vz.conf
+. ${VE_CONFFILE}
+HN=$(hostname -s)
+SRC=tank/ProductionNFSVolumes/${HN^}/$CTID
+DST=/backup
+localMountPath=/mnt/$SRC
+if [ ! -e ${VE_ROOT}${DST} ]; then mkdir -p ${VE_ROOT}${DST}; fi
+if [ ! -e ${localMountPath} ]; then mkdir -p ${localMountPath}; fi
+
+mount -t nfs | grep $localMountPath || mount -t nfs $SERVER:/$SRC $localMountPath
+mount -n -t simfs ${localMountPath} ${VE_ROOT}${DST} -o ${localMountPath}
+
