@@ -1,0 +1,19 @@
+#!/bin/bash
+p=tank
+source ${VE_CONFFILE}
+[ -d ${VE_PRIVATE} ] || mkdir ${VE_PRIVATE}
+[ -n "$VE_DEVICE" ] && mount ${VE_DEVICE} ${VE_PRIVATE} || echo -n " "
+/root/zfsSyncFS/zvzMigrate.sh $p/$VEID
+
+mount /dev/vg0/lv${VEID} /vz/private/${VEID}
+if ! mount | grep /vz/private/${VEID} >/dev/null; then
+    echo "Unable to mount storage volume"
+    exit 1
+else
+    exit 0
+fi
+
+tar -zxf /vz/template/cache/${OST}.tar.gz -C /vz/private/${VEID}/
+cp -n /etc/vz/conf/ve-${CONFIG}.conf-sample /etc/vz/conf/${VEID}.conf
+vzctl set ${VEID} --ostemplate $OST --diskspace 100T:100T --diskinodes 9223372036854775807:9223372036854775807 --save
+
